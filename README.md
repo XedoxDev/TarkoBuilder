@@ -4,19 +4,19 @@
 
 This tool enables Java compilation, resource processing, APK signing, and optimization (R8/D8) entirely on-device.  
 
-If you use min sdk > 21 - builder no works.
----  
+> ⚠️ **Compatibility Note**: If using minSdk > 21, the builder may not work properly.
 
 ## **🔹 Features**  
 
+```
 ✅ **Full on-device APK build pipeline**  
 ✅ **Java compilation support (adapted ECJ)**  
 ✅ **Built-in APK signing (modified ApkSigner)**  
 ✅ **Resource, assets, and native library processing**  
 ✅ **Optimization & DEX conversion (R8/D8)**  
 ✅ **Detailed logging & debugging**  
-
----  
+✅ **Configuration via properties files**  
+```
 
 ## **🔹 Quick Start**  
 
@@ -28,20 +28,8 @@ config.androidJarPath = "/path/to/android.jar";       // android.jar for target 
 config.manifestPath = "/path/to/AndroidManifest.xml"; // App manifest  
 config.resDir = "/path/to/res";                       // Resource directory (res/)  
 config.javaSources.add("/path/to/java/src/");         // Java source directory  
-config.javaSources.add("/path/to/java/src2/"); 
-config.javaSources.add("/path/to/YourClass.java"); 
 
 ApkBuilder builder = new ApkBuilder(context, config);
-```
-
-### **1.5 java options**  
-
-Also you can directly control javac, use field "java", and see JavacOptionsBuilder.
-
-```java
-config.java.classpath("path/to/library.jar); // add classpath
-config.java.option("-warn:-unused"); // something ecj option
-
 ```
 
 ### **2. Start the Build**  
@@ -49,15 +37,13 @@ config.java.option("-warn:-unused"); // something ecj option
 builder.build();  // Starts the APK build process  
 ```
 
----  
-
 ## **🔹 Configuration**  
 
 ### **Core Settings**  
 ```java
 config.appPackage = "com.example.app";  // Package name  
 config.versionName = "1.0";             // App version  
-config.versionCode = "1";                 // Version code  
+config.versionCode = 1;                 // Version code  
 config.minSdk = 21;                     // Minimum SDK version  
 config.targetSdk = 33;                  // Target SDK version  
 config.javaVersion = "17";              // Java version (8, 11, 17, etc.)  
@@ -65,71 +51,79 @@ config.javaVersion = "17";              // Java version (8, 11, 17, etc.)
 
 ### **Optional Settings**  
 ```java
-config.assetsDir = "/path/to/assets";   // Assets directory (optional)  
-config.nativeLibsDir = "/path/to/libs"; // Native libraries (armeabi-v7a, arm64-v8a, etc.)  
-config.r8enabled = true;                // Enable R8 (experimental)  
-config.proguardRulesPath = "/path/to/proguard-rules.pro"; // ProGuard rules  
+config.assetsDir = "/path/to/assets";   // Assets directory  
+config.nativeLibsDir = "/path/to/libs"; // Native libraries  
+config.r8enabled = true;                // Enable R8 optimization  
+config.debugMode = true;                // Verbose logging  
 ```
 
-### **APK Signing**  
-Choose one of the following methods:  
-- **Debug key (default)**  
-- **Custom key (PK8 + X509)**  
-- **Keystore (JKS)** *(unstable, not recommended)*  
+## **🔹 ApkbuilderProperties Utility**  
 
-#### **Option 1: PK8 + X509 (recommended)**  
+**Manage configurations via properties files:**  
+
+```java
+// Load configuration
+Properties props = new Properties();
+props.load(new FileInputStream("config.properties"));
+ApkBuilder.BuildConfig config = ApkbuilderProperties.load(props);
+
+// Save default config
+ApkbuilderProperties.saveDefaultConfig("default.properties");
+```
+
+**Sample properties file:**  
+```properties
+androidJarPath=/path/to/android.jar
+buildPath=build
+manifestPath=AndroidManifest.xml
+resDir=res
+javaSources=src/;src2/
+
+appPackage=com.example.app
+minSdk=21
+targetSdk=33
+```
+
+## **🔹 APK Signing**  
+
+### **Option 1: PK8 + X509 (Recommended)**  
 ```java
 config.apkSignEnable = true;
 config.keyConfig.keyWithCert.keyPath = "path/to/key.pk8";
 config.keyConfig.keyWithCert.certPath = "path/to/cert.x509.pem";
 ```
 
-#### **Option 2: Keystore (JKS)** *(experimental)*  
+### **Option 2: Keystore (Experimental)**  
 ```java
 config.apkSignEnable = true;
 config.keyConfig.useKeystore = true;
 config.keyConfig.keystore.path = "/path/to/keystore.jks";
 config.keyConfig.keystore.alias = "keyalias";
 config.keyConfig.keystore.storePassword = "password";
-config.keyConfig.keystore.keyPassword = "password";
 ```
 
----  
+## **🔹 Java Compilation**  
 
-## **🔹 Logging & Debugging**  
-
-Enable debug mode for detailed logs:  
+Control ECJ compiler options:  
 ```java
-config.debugMode = true; // Verbose build logs  
+config.java.classpath("path/to/library.jar"); 
+config.java.option("-warn:-unused"); // ECJ-specific options
 ```
-
-### **Custom Log Output**  
-```java
-PrintStream logStream = System.out; // Or use a file stream  
-ApkBuilder builder = new ApkBuilder(context, logStream, config);
-```
-
----  
 
 ## **🔹 Requirements**  
 
-- `android.jar` for the target SDK version  
-- Java sources with correct package structure  
+- `android.jar` for target SDK version  
+- Java sources with proper package structure  
 - Android device with sufficient storage  
-
----  
 
 ## **🔹 Support**  
 
-For issues or feature requests, please open an issue in the project repository.  
+Report issues in the project repository.  
 
----  
+## **📌 Notes**  
+- **R8 is experimental** - disable with `r8enabled = false` if unstable  
+- **Keystore signing may fail** - PK8+X509 is more reliable  
+- **Requires matching android.jar** for target SDK  
 
-### **📌 Notes**  
-- **`R8` is experimental** – disable with `r8enabled = false` if unstable.  
-- **Keystore signing may faile** – `PK8`+`X509` is more reliable.  
-- **`android.jar` is required** – ensure it matches your target SDK.  
-
-## Thanks to
- - (Update)[https://gitlab.com/updateDeveloper] - help in creating the builder# TarkoBuilder
-# TarkoBuilder
+## **Credits**  
+- [UpdateDeveloper](https://gitlab.com/updateDeveloper) - Help with aapt2 and ecj
