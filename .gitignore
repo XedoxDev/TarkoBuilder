@@ -1,0 +1,7 @@
+/.androidide
+/.gradle
+/.idea
+/build
+*.jks
+*.keystore
+local.properties

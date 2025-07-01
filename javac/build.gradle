@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+group 'org.xedox.javac'
+version '1.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
